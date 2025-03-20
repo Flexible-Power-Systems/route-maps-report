@@ -1,17 +1,18 @@
-# DO NOT include azure-functions-worker in this file
-# The Python Worker is managed by Azure Functions platform
-# Manually managing azure-functions-worker may cause unexpected issues
-
-azure-functions
 attrs==25.3.0
+azure-core==1.32.0
+azure-functions==1.21.3
+azure-storage-blob==12.25.0
 branca==0.8.1
 certifi==2025.1.31
+cffi==1.17.1
 chardet==5.2.0
 charset-normalizer==3.4.1
+cryptography==44.0.2
 folium==0.19.5
 geopandas==1.0.1
 h11==0.14.0
 idna==3.10
+isodate==0.7.2
 Jinja2==3.1.6
 MarkupSafe==3.0.2
 numpy==2.2.4
@@ -20,6 +21,7 @@ packaging==24.2
 pandas==2.2.3
 pillow==11.1.0
 psycopg2-binary==2.9.10
+pycparser==2.22
 pyogrio==0.10.0
 pyproj==3.7.1
 PySocks==1.7.1
