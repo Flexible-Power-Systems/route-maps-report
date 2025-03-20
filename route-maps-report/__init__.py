@@ -11,6 +11,7 @@ from pathlib import Path
 from folium.plugins import PolyLineTextPath, Fullscreen
 import azure.functions as func
 from azure.storage.blob import BlobServiceClient, ContentSettings
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle, PageBreak
 
 def main(mytimer: func.TimerRequest) -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
@@ -241,7 +242,7 @@ def main(mytimer: func.TimerRequest) -> None:
         elements = []
         
         # Add the report title
-        elements.append(Paragraph("Route Maps Report", title_style))
+        elements.append(Paragraph(f"Route Maps Report - {current_date_minus_2}", title_style))
         elements.append(Spacer(1, 0.25*inch))
         
         # Create the legend
@@ -273,6 +274,7 @@ def main(mytimer: func.TimerRequest) -> None:
         ]))
         
         elements.append(legend_table)
+        elements.append(PageBreak())
         elements.append(Spacer(1, 0.5*inch))
         
         # Connect to the database to get route aliases
@@ -352,6 +354,8 @@ def main(mytimer: func.TimerRequest) -> None:
                     img.imageWidth = 7*inch * 0.8
                     img.imageHeight = 5*inch * 0.8
                     elements.append(img)
+                    if html_file != sorted(html_files)[-1]: # Don't add page break after the last map
+                        elements.append(PageBreak())
                     logging.info(f"Added map for {map_title} to PDF")
                 except Exception as e:
                     logging.error(f"Failed to add screenshot to PDF: {e}")
