@@ -103,7 +103,7 @@ def main(mytimer: func.TimerRequest) -> None:
             logging.error(f"Error getting vehicle and route info: {e}")
             return None, None
     
-    def get_route_timing(current_date_minus_2, vehicle_id, route_alias, conn):
+    def get_route_timing(current_date_minus_1, vehicle_id, route_alias, conn):
         """
         Part 2 - Find the actual start and end date time for the route:
         - go to t_route_data_from_telematics in PREPROD
@@ -115,7 +115,7 @@ def main(mytimer: func.TimerRequest) -> None:
             query = f"""
                 SELECT route_start_time, route_end_time
                 FROM public.t_route_data_from_telematics
-                WHERE route_alias = '{route_alias}' AND vehicle_id = '{vehicle_id}' AND route_start_time::date = '{current_date_minus_2}'
+                WHERE route_alias = '{route_alias}' AND vehicle_id = '{vehicle_id}' AND route_start_time::date = '{current_date_minus_1}'
             """
             df = pd.read_sql(query, conn)
             
@@ -159,7 +159,7 @@ def main(mytimer: func.TimerRequest) -> None:
             logging.error(f"Error getting telematics data: {e}")
             return None
     
-    def create_pdf_report(output_dir, current_date_minus_2):
+    def create_pdf_report(output_dir, current_date_minus_1):
         """
         Creates a PDF with screenshots of all maps and a legend explaining the markers and lines.
         
@@ -218,7 +218,7 @@ def main(mytimer: func.TimerRequest) -> None:
             return None
         
         # Create the PDF document
-        pdf_filename = f'route_map_report_{current_date_minus_2}.pdf'
+        pdf_filename = f'route_map_report_{current_date_minus_1}.pdf'
         pdf_path = os.path.join(output_dir, pdf_filename)
         doc = SimpleDocTemplate(pdf_path, pagesize=A4)
         styles = getSampleStyleSheet()
@@ -242,7 +242,7 @@ def main(mytimer: func.TimerRequest) -> None:
         elements = []
         
         # Add the report title
-        elements.append(Paragraph(f"Route Maps Report - {current_date_minus_2}", title_style))
+        elements.append(Paragraph(f"Route Maps Report - {current_date_minus_1}", title_style))
         elements.append(Spacer(1, 0.25*inch))
         
         # Create the legend
@@ -399,7 +399,7 @@ def main(mytimer: func.TimerRequest) -> None:
             logging.error(f"Error creating PDF: {e}")
             return None
     
-    def create_route_map(route_id, output_dir, current_date_minus_2):
+    def create_route_map(route_id, output_dir, current_date_minus_1):
         """Create and save a map for a specific route ID."""
         # Connect to database
         conn = get_connection()
@@ -420,7 +420,7 @@ def main(mytimer: func.TimerRequest) -> None:
             # Only get timing and telematics data if vehicle_id is not 'X'
             if vehicle_id != 'X':
                 # Part 2: Get actual route timing
-                route_start_time, route_end_time = get_route_timing(current_date_minus_2, vehicle_id, route_alias, conn)
+                route_start_time, route_end_time = get_route_timing(current_date_minus_1, vehicle_id, route_alias, conn)
                 
                 # Only get telematics data if we have timing
                 if route_start_time and route_end_time:
@@ -748,7 +748,7 @@ def main(mytimer: func.TimerRequest) -> None:
     site_id = os.getenv('site_id', 10)
     # Determine the temporary directory based on the OS
     temp_directory = "/tmp" if os.name == "posix" else "D:\\local\\Temp"
-    current_date_minus_2 = (datetime.datetime.now() - datetime.timedelta(days=2)).strftime("%Y-%m-%d")
+    current_date_minus_1 = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     # Load routes
     try:
         route_numbers = fetch_route_numbers(site_id)
@@ -761,13 +761,13 @@ def main(mytimer: func.TimerRequest) -> None:
         # Create maps for each route
         for route_id in routes_df['route_no'].unique():
             logging.info(f"Processing route: {route_id}")
-            create_route_map(route_id, temp_directory, current_date_minus_2)
+            create_route_map(route_id, temp_directory, current_date_minus_1)
         
         logging.info(f"All maps saved to {temp_directory}")
         
         # Create PDF report with all maps
         logging.info("Creating PDF report with screenshots...")
-        pdf_path = create_pdf_report(temp_directory, current_date_minus_2)
+        pdf_path = create_pdf_report(temp_directory, current_date_minus_1)
         if pdf_path:
             logging.info(f"PDF report created: {pdf_path}")
             
